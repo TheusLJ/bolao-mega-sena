@@ -53,7 +53,7 @@
             </svg>
         );
 
-        // Storage simulado para funcionar no GitHub Pages
+        // Storage usando localStorage
         const storage = {
             get: (key) => {
                 try {
@@ -74,7 +74,7 @@
         };
 
         const MegaSenaPool = () => {
-            const [isAdmin, setIsAdmin] = useState(false);
+            const [view, setView] = useState('public'); // 'public', 'login', 'admin'
             const [loginData, setLoginData] = useState({ username: '', password: '' });
             const [showPassword, setShowPassword] = useState(false);
             const [participants, setParticipants] = useState([]);
@@ -112,8 +112,9 @@
 
             const handleLogin = () => {
                 if (loginData.username === 'TheusLJ' && loginData.password === '&!z938o7nIgH') {
-                    setIsAdmin(true);
+                    setView('admin');
                     setError('');
+                    setLoginData({ username: '', password: '' });
                 } else {
                     setError('Login ou senha incorretos');
                 }
@@ -187,7 +188,8 @@
                 }
             };
 
-            if (!isAdmin) {
+            // Tela Pública - Participantes
+            if (view === 'public') {
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 p-4">
                         <div className="max-w-2xl mx-auto">
@@ -275,7 +277,7 @@
                             </div>
 
                             <button
-                                onClick={() => setIsAdmin(null)}
+                                onClick={() => setView('login')}
                                 className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
                             >
                                 <Lock className="w-5 h-5" />
@@ -286,7 +288,8 @@
                 );
             }
 
-            if (isAdmin === null) {
+            // Tela de Login
+            if (view === 'login') {
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-4">
                         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
@@ -320,9 +323,9 @@
                                             type={showPassword ? 'text' : 'password'}
                                             value={loginData.password}
                                             onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                                            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800"
                                             placeholder="Digite a senha"
-                                            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                                         />
                                         <button
                                             type="button"
@@ -342,7 +345,7 @@
                                 </button>
 
                                 <button
-                                    onClick={() => setIsAdmin(false)}
+                                    onClick={() => setView('public')}
                                     className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
                                 >
                                     Voltar
@@ -353,6 +356,7 @@
                 );
             }
 
+            // Área Admin
             const combinedGame = participants.length > 0 ? generateCombinedGame() : [];
 
             return (
@@ -377,7 +381,7 @@
                                         Limpar Dados
                                     </button>
                                     <button
-                                        onClick={() => setIsAdmin(false)}
+                                        onClick={() => setView('public')}
                                         className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
                                     >
                                         Sair
@@ -414,7 +418,7 @@
                                 {participants.length === 0 ? (
                                     <div className="text-center py-12 text-gray-500">
                                         <Users />
-                                        <p className="text-xl">Nenhum participante ainda</p>
+                                        <p className="text-xl mt-4">Nenhum participante ainda</p>
                                         <p className="text-sm mt-2">Compartilhe o link para começar!</p>
                                     </div>
                                 ) : (
