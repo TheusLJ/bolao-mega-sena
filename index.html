@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bolão da Mega Sena - Família</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -131,6 +133,8 @@
                 });
             };
 
+            const [showReceipt, setShowReceipt] = useState(null);
+
             const handleSubmit = () => {
                 setError('');
                 setSuccess('');
@@ -157,8 +161,29 @@
                 };
 
                 saveParticipants([...participants, newParticipant]);
+                setShowReceipt(newParticipant);
                 setSuccess(`Pronto ${currentUser.name}! Seus números foram registrados! 🎉`);
                 setCurrentUser({ name: '', completeGame: [], luckyNumber: '' });
+            };
+
+            const downloadReceipt = () => {
+                const receiptElement = document.getElementById('receipt-card');
+                if (!receiptElement) return;
+
+                // Usar html2canvas se disponível, senão mostrar mensagem
+                if (typeof html2canvas !== 'undefined') {
+                    html2canvas(receiptElement, {
+                        backgroundColor: '#10b981',
+                        scale: 2
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `bolao-mega-sena-${showReceipt.name}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    });
+                } else {
+                    alert('Tire um print/screenshot desta tela para salvar seu comprovante!');
+                }
             };
 
             const generateCombinedGame = () => {
@@ -193,6 +218,62 @@
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 p-4">
                         <div className="max-w-2xl mx-auto">
+                            {showReceipt && (
+                                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+                                    <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+                                        <div id="receipt-card" className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+                                            <div className="text-center mb-6">
+                                                <Trophy className="w-16 h-16 mx-auto mb-3" />
+                                                <h2 className="text-3xl font-bold mb-2">Comprovante</h2>
+                                                <p className="text-lg">Bolão da Mega Sena</p>
+                                            </div>
+                                            
+                                            <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                                                <p className="text-sm mb-1">Participante:</p>
+                                                <p className="text-2xl font-bold">{showReceipt.name}</p>
+                                            </div>
+
+                                            <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                                                <p className="text-sm mb-3">Jogo Completo:</p>
+                                                <div className="grid grid-cols-6 gap-2">
+                                                    {showReceipt.completeGame.map(num => (
+                                                        <div key={num} className="bg-white text-green-600 rounded-lg aspect-square flex items-center justify-center font-bold text-lg">
+                                                            {num}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+                                                <p className="text-sm mb-2">Número da Sorte:</p>
+                                                <div className="bg-yellow-400 text-yellow-900 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                                                    <span className="text-2xl font-bold">{showReceipt.luckyNumber}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="text-center mt-4 text-xs opacity-75">
+                                                {new Date(showReceipt.timestamp).toLocaleString('pt-BR')}
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 space-y-3">
+                                            <button
+                                                onClick={downloadReceipt}
+                                                className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"
+                                            >
+                                                📥 Baixar Comprovante
+                                            </button>
+                                            <button
+                                                onClick={() => setShowReceipt(null)}
+                                                className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                            >
+                                                Fechar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="bg-white rounded-2xl shadow-2xl p-8 mb-6">
                                 <div className="text-center mb-8">
                                     <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
